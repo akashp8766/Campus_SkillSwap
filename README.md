@@ -221,21 +221,7 @@ The application restricts registration to specific campus email domains. Update 
 ALLOWED_DOMAINS=university.edu,college.edu,school.edu
 ```
 
-## 🎨 UI/UX Design Principles
 
-### Material UI Theme
-- **Primary Color**: Professional blue (#1976d2)
-- **Secondary Color**: Accent red (#dc004e)
-- **Typography**: Roboto font family with proper hierarchy
-- **Spacing**: 8px base unit for consistent spacing
-- **Border Radius**: 8px for cards and inputs, 16px for chips
-
-### Psychological UX Principles
-- **Color Harmony**: Complementary color scheme for accessibility
-- **Whitespace**: Generous spacing for better readability
-- **Visual Hierarchy**: Clear typography scale and component sizing
-- **Consistency**: Uniform component styling and interactions
-- **Accessibility**: WCAG compliant color contrasts and focus states
 
 ## 🔒 Security Features
 
@@ -330,41 +316,6 @@ PORT=5000
 CLIENT_URL=https://your-domain.com
 ```
 
-### Build Commands
-```bash
-# Build React client
-cd client && npm run build
-
-# Start production server
-cd server && npm start
-```
-
-### Recommended Hosting
-- **Frontend**: Vercel, Netlify, or AWS S3
-- **Backend**: Heroku, DigitalOcean, or AWS EC2
-- **Database**: MongoDB Atlas
-- **Real-time**: Socket.io works with most hosting providers
-
-## 🧪 Testing
-
-### Manual Testing Checklist
-- [ ] User registration with campus email
-- [ ] User login/logout functionality
-- [ ] Profile creation and editing
-- [ ] Friend request sending and acceptance
-- [ ] Real-time chat messaging
-- [ ] Skill swap proposals
-- [ ] Feedback submission and viewing
-- [ ] Admin panel functionality
-
-### Automated Testing (Recommended)
-```bash
-# Install testing dependencies
-npm install --save-dev jest supertest
-
-# Run tests
-npm test
-```
 
 ## 🤝 Contributing
 
@@ -374,37 +325,3 @@ npm test
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-### Development Guidelines
-- Follow ESLint configuration
-- Use meaningful commit messages
-- Write tests for new features
-- Update documentation as needed
-- Follow Material UI design patterns
-
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🆘 Support
-
-For support and questions:
-- Create an issue in the repository
-- Check the documentation
-- Review the code comments
-
-## 🔮 Future Enhancements
-
-- [ ] Push notifications for mobile
-- [ ] Video call integration for virtual skill swaps
-- [ ] Advanced search filters
-- [ ] Skill verification system
-- [ ] Gamification elements
-- [ ] Mobile app development
-- [ ] Integration with campus systems
-- [ ] Advanced analytics dashboard
-- [ ] Multi-language support
-- [ ] Dark mode theme
-
----
-
-**Built with ❤️ for campus communities**
