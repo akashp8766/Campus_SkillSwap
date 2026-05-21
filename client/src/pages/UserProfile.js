@@ -20,7 +20,8 @@ import {
   FormControl,
   InputLabel,
   Select,
-  MenuItem
+  MenuItem,
+  useTheme
 } from '@mui/material';
 import {
   Person,
@@ -37,6 +38,8 @@ import PageLayout from '../components/layout/PageLayout';
 
 const UserProfile = () => {
   const { userId } = useParams();
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
   const [user, setUser] = useState(null);
   const [feedback, setFeedback] = useState([]);
   const [summary, setSummary] = useState(null);
@@ -221,7 +224,7 @@ const UserProfile = () => {
                   Recent Feedback (Top 5)
                 </Typography>
                 {feedback.slice(0, 5).map((item, index) => (
-                  <Box key={index} mb={2} p={2} sx={{ bgcolor: 'grey.50', borderRadius: 2 }}>
+              <Box key={index} mb={2} p={2} sx={{ bgcolor: isDark ? 'grey.900' : 'grey.50', borderRadius: 2 }}>
                     <Box display="flex" alignItems="center" mb={1} gap={2}>
                       <Avatar sx={{ width: 40, height: 40 }}>
                         {item.reviewer?.name?.charAt(0).toUpperCase() || 'U'}

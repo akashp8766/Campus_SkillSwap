@@ -4,6 +4,16 @@ import toast from 'react-hot-toast';
 
 const AuthContext = createContext();
 
+const normalizeUser = (rawUser) => {
+  if (!rawUser) return null;
+  const normalizedId = rawUser.id || rawUser._id;
+  return {
+    ...rawUser,
+    id: normalizedId,
+    _id: rawUser._id || normalizedId,
+  };
+};
+
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -33,7 +43,7 @@ export const AuthProvider = ({ children }) => {
         try {
           const response = await authAPI.post('/auth/verify-token');
           if (response.data.valid) {
-            setUser(response.data.user);
+            setUser(normalizeUser(response.data.user));
           } else {
             // Token is invalid, clear it
             localStorage.removeItem('token');
@@ -58,7 +68,7 @@ export const AuthProvider = ({ children }) => {
       
       localStorage.setItem('token', newToken);
       setToken(newToken);
-      setUser(userData);
+      setUser(normalizeUser(userData));
       
       toast.success('Login successful!');
       return { success: true };
@@ -76,7 +86,7 @@ export const AuthProvider = ({ children }) => {
       
       localStorage.setItem('token', newToken);
       setToken(newToken);
-      setUser(newUser);
+      setUser(normalizeUser(newUser));
       
       toast.success('Registration successful!');
       return { success: true };
@@ -95,14 +105,14 @@ export const AuthProvider = ({ children }) => {
   };
 
   const updateUser = (updatedUser) => {
-    setUser(updatedUser);
+    setUser(normalizeUser(updatedUser));
   };
 
   const refreshUser = async () => {
     if (token) {
       try {
         const response = await authAPI.get('/auth/profile');
-        setUser(response.data.user);
+        setUser(normalizeUser(response.data.user));
       } catch (error) {
         console.error('Failed to refresh user data:', error);
       }

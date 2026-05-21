@@ -113,18 +113,19 @@ router.get('/:userId', async (req, res) => {
     const skip = (page - 1) * limit;
 
     console.log('   Fetching feedback with query:', query);
-    const feedback = await Feedback.find(query)
-      .populate('reviewer', 'name email studentId')
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(parseInt(limit));
+    
+    // Run independent database queries concurrently for better performance
+    const [feedback, total, summary] = await Promise.all([
+      Feedback.find(query)
+        .populate('reviewer', 'name email studentId')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(parseInt(limit)),
+      Feedback.countDocuments(query),
+      Feedback.getFeedbackSummary(userId)
+    ]);
 
-    const total = await Feedback.countDocuments(query);
     console.log('   Found', feedback.length, 'feedbacks, total:', total);
-
-    // Get feedback summary
-    console.log('   Getting feedback summary...');
-    const summary = await Feedback.getFeedbackSummary(userId);
     console.log('   Summary retrieved successfully');
 
     res.json({
@@ -170,10 +171,11 @@ router.get('/user/:userId/summary', async (req, res) => {
       return res.status(404).json({ message: 'User is not active' });
     }
 
-    console.log('   Getting feedback summary...');
-    const summary = await Feedback.getFeedbackSummary(userId);
-    console.log('   Getting rating stats...');
-    const ratingStats = await Feedback.getAverageRating(userId);
+    console.log('   Getting feedback stats concurrently...');
+    const [summary, ratingStats] = await Promise.all([
+      Feedback.getFeedbackSummary(userId),
+      Feedback.getAverageRating(userId)
+    ]);
     console.log('✅ Summary data retrieved successfully');
 
     res.json({

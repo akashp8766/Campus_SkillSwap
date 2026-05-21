@@ -2,7 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const http = require('http');
-const socketIo = require('socket.io');
+const { Server } = require('socket.io');
 require('dotenv').config();
 
 // Import routes
@@ -13,6 +13,8 @@ const chatRoutes = require('./routes/chat');
 const feedbackRoutes = require('./routes/feedback');
 const adminRoutes = require('./routes/admin');
 const sessionRoutes = require('./routes/session');
+const recommendationRoutes = require('./routes/recommendation');
+const chatbotRoutes = require('./routes/chatbot');
 
 // Import middleware
 const { auth } = require('./middleware/auth');
@@ -21,7 +23,7 @@ const app = express();
 const server = http.createServer(app);
 
 // Socket.io setup
-const io = socketIo(server, {
+const io = new Server(server, {
   cors: {
     origin: [
       process.env.CLIENT_URL || "http://localhost:3000",
@@ -48,10 +50,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // MongoDB connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/campus-skill-swap', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/campus-skill-swap')
 .then(() => console.log('MongoDB connected successfully'))
 .catch(err => console.error('MongoDB connection error:', err));
 
@@ -66,6 +65,8 @@ app.use('/api/chat', auth, chatRoutes);
 app.use('/api/feedback', auth, feedbackRoutes);
 app.use('/api/session', auth, sessionRoutes);
 app.use('/api/admin', auth, adminRoutes);
+app.use('/api/recommend', auth, recommendationRoutes);
+app.use('/api/chatbot', chatbotRoutes);
 
 // Socket.io connection handling
 const connectedUsers = new Map(); // Map userId to socketId
@@ -119,15 +120,12 @@ io.on('connection', (socket) => {
       });
 
       // Send notification to receiver
-      const User = require('./models/User');
-      const sender = await User.findById(senderId);
-      
       console.log(`🔔 Sending notification to ${receiverId}`);
       io.to(receiverId).emit('notification', {
         type: 'message',
-        message: `New message from ${sender.name}`,
+        message: `New message from ${newMessage.sender.name}`,
         senderId: senderId,
-        senderName: sender.name,
+        senderName: newMessage.sender.name,
         timestamp: new Date().toISOString()
       });
       
@@ -199,10 +197,35 @@ app.use('*', (req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });
 
-const PORT = process.env.PORT || 5000;
+const BASE_PORT = Number(process.env.PORT) || 5000;
+let currentPort = BASE_PORT;
+const MAX_PORT_RETRIES = 20;
 
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+const startServer = (port) => {
+  currentPort = port;
+  server.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+  });
+};
+
+server.on('error', (error) => {
+  if (error.code === 'EADDRINUSE') {
+    const nextPort = currentPort + 1;
+
+    if (nextPort > BASE_PORT + MAX_PORT_RETRIES) {
+      console.error(`No free port found in range ${BASE_PORT}-${BASE_PORT + MAX_PORT_RETRIES}.`);
+      process.exit(1);
+    }
+
+    console.warn(`Port ${currentPort} is in use. Retrying on port ${nextPort}...`);
+    startServer(nextPort);
+    return;
+  }
+
+  console.error('Server startup error:', error);
+  process.exit(1);
 });
+
+startServer(BASE_PORT);
 
 module.exports = { app, io, connectedUsers };

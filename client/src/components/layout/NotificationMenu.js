@@ -23,41 +23,47 @@ import {
   Close,
   DoneAll
 } from '@mui/icons-material';
+import { useTheme, alpha } from '@mui/material/styles';
 import { useNotifications } from '../../context/NotificationContext';
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 
 const NotificationMenu = ({ anchorEl, open, onClose }) => {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
   const { notifications, unreadCount, markAsRead, markAllAsRead, removeNotification, handleNotificationClick: handleNotificationNavigation } = useNotifications();
   const navigate = useNavigate();
 
-  const getNotificationIcon = (type) => {
-    switch (type) {
-      case 'friend_request':
-        return <PersonAdd sx={{ color: '#2196f3' }} />;
-      case 'friend_accepted':
-        return <CheckCircle sx={{ color: '#4caf50' }} />;
-      case 'new_message':
-        return <Chat sx={{ color: '#ff9800' }} />;
-      case 'friend_removed':
-        return <PersonRemove sx={{ color: '#f44336' }} />;
-      default:
-        return <Chat />;
-    }
-  };
-
-  const getNotificationColor = (type) => {
-    switch (type) {
-      case 'friend_request':
-        return '#e3f2fd';
-      case 'friend_accepted':
-        return '#e8f5e9';
-      case 'new_message':
-        return '#fff3e0';
-      case 'friend_removed':
-        return '#ffebee';
-      default:
-        return '#f5f5f5';
+  const NOTIFICATION_CONFIG = {
+    friend_request: {
+      icon: <PersonAdd sx={{ color: '#2196f3' }} />,
+      color: isDark ? alpha('#2196f3', 0.15) : '#e3f2fd',
+      getPath: () => '/friends?tab=1'
+    },
+    friend_accepted: {
+      icon: <CheckCircle sx={{ color: '#4caf50' }} />,
+      color: isDark ? alpha('#4caf50', 0.15) : '#e8f5e9',
+      getPath: () => '/friends?tab=0'
+    },
+    new_message: {
+      icon: <Chat sx={{ color: '#ff9800' }} />,
+      color: isDark ? alpha('#ff9800', 0.15) : '#fff3e0',
+      getPath: (n) => n.senderId ? `/chat/${n.senderId}` : '/chat'
+    },
+    message: {
+      icon: <Chat sx={{ color: '#ff9800' }} />,
+      color: isDark ? alpha('#ff9800', 0.15) : '#fff3e0',
+      getPath: (n) => n.senderId ? `/chat/${n.senderId}` : '/chat'
+    },
+    friend_removed: {
+      icon: <PersonRemove sx={{ color: '#f44336' }} />,
+      color: isDark ? alpha('#f44336', 0.15) : '#ffebee',
+      getPath: () => '/friends'
+    },
+    default: {
+      icon: <Chat />,
+      color: isDark ? alpha('#9e9e9e', 0.15) : '#f5f5f5',
+      getPath: () => '/dashboard'
     }
   };
 
@@ -68,26 +74,11 @@ const NotificationMenu = ({ anchorEl, open, onClose }) => {
     } else {
       // Fallback to old behavior
       markAsRead(notification.id);
-      const path = getRedirectPath(notification);
+      const config = NOTIFICATION_CONFIG[notification.type] || NOTIFICATION_CONFIG.default;
+      const path = config.getPath(notification);
       navigate(path);
     }
     onClose();
-  };
-
-  const getRedirectPath = (notification) => {
-    switch (notification.type) {
-      case 'friend_request':
-        return '/friends?tab=1'; // Requests tab
-      case 'friend_accepted':
-        return '/friends?tab=0'; // My Friends tab
-      case 'new_message':
-      case 'message':
-        return notification.senderId ? `/chat/${notification.senderId}` : '/chat';
-      case 'friend_removed':
-        return '/friends';
-      default:
-        return '/dashboard';
-    }
   };
 
   const handleRemoveNotification = (e, notificationId) => {
@@ -152,30 +143,32 @@ const NotificationMenu = ({ anchorEl, open, onClose }) => {
         </Box>
       ) : (
         <List sx={{ p: 0, maxHeight: 400, overflow: 'auto' }}>
-          {notifications.map((notification, index) => (
-            <React.Fragment key={notification.id}>
-              <ListItemButton
-                onClick={() => handleNotificationClick(notification)}
-                sx={{
-                  backgroundColor: notification.read
-                    ? 'transparent'
-                    : getNotificationColor(notification.type),
-                  '&:hover': {
+          {notifications.map((notification, index) => {
+            const config = NOTIFICATION_CONFIG[notification.type] || NOTIFICATION_CONFIG.default;
+            return (
+              <React.Fragment key={notification.id}>
+                <ListItemButton
+                  onClick={() => handleNotificationClick(notification)}
+                  sx={{
                     backgroundColor: notification.read
-                      ? 'rgba(0, 0, 0, 0.04)'
-                      : getNotificationColor(notification.type),
-                    opacity: 0.8
-                  },
-                  py: 1.5,
-                  px: 2
-                }}
-              >
-                <ListItemAvatar>
-                  <Avatar sx={{ bgcolor: 'white' }}>
-                    {getNotificationIcon(notification.type)}
-                  </Avatar>
-                </ListItemAvatar>
-                <ListItemText
+                      ? 'transparent'
+                      : config.color,
+                    '&:hover': {
+                      backgroundColor: notification.read
+                        ? 'rgba(0, 0, 0, 0.04)'
+                        : config.color,
+                      opacity: 0.8
+                    },
+                    py: 1.5,
+                    px: 2
+                  }}
+                >
+                  <ListItemAvatar>
+                    <Avatar sx={{ bgcolor: 'white' }}>
+                      {config.icon}
+                    </Avatar>
+                  </ListItemAvatar>
+                  <ListItemText
                   primary={
                     <Typography
                       variant="body2"
@@ -208,10 +201,11 @@ const NotificationMenu = ({ anchorEl, open, onClose }) => {
                 >
                   <Close fontSize="small" />
                 </IconButton>
-              </ListItemButton>
-              {index < notifications.length - 1 && <Divider />}
-            </React.Fragment>
-          ))}
+                </ListItemButton>
+                {index < notifications.length - 1 && <Divider />}
+              </React.Fragment>
+            );
+          })}
         </List>
       )}
     </Menu>

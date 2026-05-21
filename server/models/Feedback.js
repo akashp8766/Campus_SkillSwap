@@ -50,7 +50,6 @@ const feedbackSchema = new mongoose.Schema({
   }
 });
 
-// Prevent self-feedback
 feedbackSchema.pre('save', function(next) {
   if (this.reviewer.toString() === this.reviewee.toString()) {
     const error = new Error('Cannot provide feedback to yourself');
@@ -60,7 +59,6 @@ feedbackSchema.pre('save', function(next) {
   next();
 });
 
-// Update timestamp on modification
 feedbackSchema.pre('save', function(next) {
   if (this.isModified() && !this.isNew) {
     this.updatedAt = new Date();
@@ -68,7 +66,6 @@ feedbackSchema.pre('save', function(next) {
   next();
 });
 
-// Static method to get average rating for a user
 feedbackSchema.statics.getAverageRating = async function(userId) {
   const result = await this.aggregate([
     { $match: { reviewee: new mongoose.Types.ObjectId(userId) } },
@@ -84,7 +81,6 @@ feedbackSchema.statics.getAverageRating = async function(userId) {
   return result.length > 0 ? result[0] : { averageRating: 0, totalRatings: 0 };
 };
 
-// Static method to get feedback summary for a user
 feedbackSchema.statics.getFeedbackSummary = async function(userId) {
   const summary = await this.aggregate([
     { $match: { reviewee: new mongoose.Types.ObjectId(userId) } },

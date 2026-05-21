@@ -16,7 +16,8 @@ import {
   ListItemText,
   Divider,
   Pagination,
-  Paper
+  Paper,
+  useTheme
 } from '@mui/material';
 import {
   RateReview,
@@ -30,6 +31,8 @@ import { formatDistanceToNow } from 'date-fns';
 
 const Feedback = () => {
   const { user } = useAuth();
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
   const [feedback, setFeedback] = useState([]);
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState(null);
@@ -178,7 +181,7 @@ const Feedback = () => {
                           secondary={
                             <Box mt={1}>
                               {item.comment && (
-                                <Paper elevation={0} sx={{ bgcolor: 'grey.50', p: 2, borderRadius: 2 }}>
+                            <Paper elevation={0} sx={{ bgcolor: isDark ? 'grey.900' : 'grey.50', p: 2, borderRadius: 2 }}>
                                   <Typography variant="body2" color="text.secondary">
                                     {truncateComment(item.comment, item._id)}
                                   </Typography>

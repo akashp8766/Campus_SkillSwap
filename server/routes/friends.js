@@ -3,19 +3,15 @@ const mongoose = require('mongoose');
 const FriendRequest = require('../models/FriendRequest');
 const User = require('../models/User');
 const Chat = require('../models/Chat');
-const { friendRequestValidation, handleValidationErrors} = require('../middleware/validation');
+const { friendRequestValidation, handleValidationErrors } = require('../middleware/validation');
+const { verifyFriendship } = require('../utils/friendship');
 
 const router = express.Router();
 
 // Helper function to emit notification
 const emitNotification = (io, userId, notification) => {
-  console.log('📢 Emitting notification to user:', userId);
-  console.log('📢 Notification data:', notification);
   if (io) {
     io.to(userId.toString()).emit('notification', notification);
-    console.log('✅ Notification emitted successfully');
-  } else {
-    console.log('❌ IO instance not available');
   }
 };
 
@@ -35,7 +31,8 @@ router.get('/', async (req, res) => {
     })
     .populate('sender', 'name email studentId skillsOffered averageRating')
     .populate('receiver', 'name email studentId skillsOffered averageRating')
-    .sort({ respondedAt: -1 });
+    .sort({ respondedAt: -1 })
+    .lean();
 
     // Extract friends (excluding the current user)
     const friends = friendRequests.map(request => {
@@ -43,7 +40,7 @@ router.get('/', async (req, res) => {
         ? request.receiver 
         : request.sender;
       return {
-        ...friend.toObject(),
+        ...friend,
         friendshipDate: request.respondedAt
       };
     });
@@ -76,12 +73,7 @@ router.post('/request', friendRequestValidation, handleValidationErrors, async (
     }
 
     // Check if already friends
-    const existingFriendship = await FriendRequest.findOne({
-      $or: [
-        { sender: senderId, receiver: receiverId, status: 'accepted' },
-        { sender: receiverId, receiver: senderId, status: 'accepted' }
-      ]
-    });
+    const existingFriendship = await verifyFriendship(senderId, receiverId);
 
     if (existingFriendship) {
       return res.status(400).json({ message: 'Already friends with this user' });
@@ -178,7 +170,8 @@ router.get('/requests', async (req, res) => {
       status: 'pending'
     })
     .populate('sender', 'name email studentId skillsOffered averageRating')
-    .sort({ createdAt: -1 });
+    .sort({ createdAt: -1 })
+    .lean();
 
     res.json({ requests });
 
@@ -271,10 +264,6 @@ router.delete('/:friendId', async (req, res) => {
     const userId = req.user._id;
     const friendId = req.params.friendId;
 
-    console.log('Remove friend request - userId:', userId);
-    console.log('Remove friend request - friendId:', friendId);
-    console.log('Remove friend request - friendId type:', typeof friendId);
-
     // Validate friendId
     if (!friendId || friendId === 'undefined' || friendId === 'null') {
       return res.status(400).json({ message: 'Invalid friend ID' });
@@ -290,14 +279,7 @@ router.delete('/:friendId', async (req, res) => {
     const friendObjectId = new mongoose.Types.ObjectId(friendId);
 
     // Find the friendship
-    const friendship = await FriendRequest.findOne({
-      $or: [
-        { sender: userId, receiver: friendObjectId, status: 'accepted' },
-        { sender: friendObjectId, receiver: userId, status: 'accepted' }
-      ]
-    });
-
-    console.log('Friendship found:', friendship);
+    const friendship = await verifyFriendship(userId, friendObjectId);
 
     if (!friendship) {
       return res.status(404).json({ message: 'Friendship not found' });
@@ -313,7 +295,6 @@ router.delete('/:friendId', async (req, res) => {
       await Chat.deleteOne({
         participants: { $all: [userId, friendObjectId] }
       });
-      console.log('Chat deleted between users');
     } catch (chatError) {
       console.error('Error deleting chat:', chatError);
       // Don't fail the request if chat deletion fails
@@ -329,13 +310,10 @@ router.delete('/:friendId', async (req, res) => {
       timestamp: new Date().toISOString()
     });
 
-    console.log('Friend removed successfully');
     res.json({ message: 'Friend removed successfully' });
 
   } catch (error) {
     console.error('Remove friend error:', error);
-    console.error('Error details:', error.message);
-    console.error('Error stack:', error.stack);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
@@ -346,15 +324,32 @@ router.delete('/:friendId', async (req, res) => {
 router.get('/suggestions', async (req, res) => {
   try {
     const userId = req.user._id;
-    const user = await User.findById(userId);
+    const user = await User.findById(userId)
+      .select('skillsOffered skillsLookingFor')
+      .lean();
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Get users with similar skills
+    // 1. Get IDs of existing friends/requests to exclude them from suggestions
+    const existingRequests = await FriendRequest.find({
+      $or: [
+        { sender: userId },
+        { receiver: userId }
+      ]
+    })
+      .select('sender receiver')
+      .lean();
+    
+    const friendIds = existingRequests.flatMap(req => 
+      [req.sender.toString(), req.receiver.toString()]
+    );
+    friendIds.push(userId.toString());
+
+    // 2. Query for suggestions (pushing filtering to MongoDB prevents returning empty sets)
     const suggestions = await User.find({
-      _id: { $ne: userId },
+      _id: { $nin: friendIds },
       $or: [
         { skillsOffered: { $in: user.skillsLookingFor } },
         { skillsLookingFor: { $in: user.skillsOffered } }
@@ -362,21 +357,10 @@ router.get('/suggestions', async (req, res) => {
     })
     .select('-password')
     .limit(10)
-    .sort({ reputation: -1, averageRating: -1 });
+    .sort({ reputation: -1, averageRating: -1 })
+    .lean();
 
-    // Filter out users who are already friends or have pending requests
-    const friendIds = await FriendRequest.find({
-      $or: [
-        { sender: userId },
-        { receiver: userId }
-      ]
-    }).distinct('sender receiver');
-
-    const filteredSuggestions = suggestions.filter(suggestion => 
-      !friendIds.some(id => id.toString() === suggestion._id.toString())
-    );
-
-    res.json({ suggestions: filteredSuggestions });
+    res.json({ suggestions });
 
   } catch (error) {
     console.error('Get friend suggestions error:', error);

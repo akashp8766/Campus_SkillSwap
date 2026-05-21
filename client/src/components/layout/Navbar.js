@@ -23,7 +23,8 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  DialogContentText
+  DialogContentText,
+  Tooltip,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -35,11 +36,13 @@ import {
   AdminPanelSettings,
   Logout,
   Notifications,
-  Search
+  Search,
+  Lightbulb,
+  SmartToy,
 } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext';
-import { useSocket } from '../../context/SocketContext';
 import { useNotifications } from '../../context/NotificationContext';
+import { useChatBot } from '../../context/ChatBotContext';
 import NotificationMenu from './NotificationMenu';
 
 const Navbar = () => {
@@ -51,6 +54,7 @@ const Navbar = () => {
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
   const { user, logout } = useAuth();
   const { unreadCount } = useNotifications();
+  const { setOpenChatBot } = useChatBot();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -101,6 +105,7 @@ const Navbar = () => {
     { text: 'Profile', icon: <Person />, path: '/profile' },
     { text: 'Chat', icon: <Chat />, path: '/chat' },
     { text: 'Friends', icon: <People />, path: '/friends' },
+    { text: 'Recommendations', icon: <Lightbulb />, path: '/recommendations' },
     { text: 'Feedback', icon: <RateReview />, path: '/feedback' },
   ];
 
@@ -180,6 +185,16 @@ const Navbar = () => {
           </Typography>
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {/* ChatBot */}
+            <Tooltip title="Ask CampusSkillSwap Bot">
+              <IconButton 
+                color="inherit"
+                onClick={() => setOpenChatBot(true)}
+              >
+                <SmartToy />
+              </IconButton>
+            </Tooltip>
+
             {/* Notifications */}
             <IconButton 
               color="inherit"

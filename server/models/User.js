@@ -67,7 +67,41 @@ const userSchema = new mongoose.Schema(
       min: 0,
       max: 5,
     },
-   
+    department: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    interests: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
+    sessionsCompleted: {
+      type: Number,
+      default: 0,
+    },
+    matchesCompleted: {
+      type: Number,
+      default: 0,
+    },
+    friends: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    searchHistory: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
+    profileViews: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,
@@ -75,10 +109,12 @@ const userSchema = new mongoose.Schema(
 );
 
 // Index for efficient queries
-userSchema.index({ email: 1 });
-userSchema.index({ studentId: 1 });
 userSchema.index({ skillsOffered: 1 });
 userSchema.index({ skillsLookingFor: 1 });
+userSchema.index({ interests: 1 });
+userSchema.index({ department: 1 });
+userSchema.index({ averageRating: -1 });
+userSchema.index({ reputation: -1 });
 
 // Hash password before saving
 userSchema.pre("save", async function (next) {

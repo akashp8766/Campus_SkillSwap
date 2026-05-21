@@ -20,38 +20,42 @@ router.get('/', async (req, res) => {
     let query = {};
 
     // Build combined OR clauses for name/email/studentId and skills
-    const orClauses = [];
+    const andClauses = [];
 
     if (search) {
-      // Match search term against name, studentId, email, AND skills
-      orClauses.push(
-        { name: { $regex: search, $options: 'i' } },
-        { studentId: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } },
-        { skillsOffered: { $regex: search, $options: 'i' } },
-        { skillsLookingFor: { $regex: search, $options: 'i' } }
-      );
+      andClauses.push({
+        $or: [
+          { name: { $regex: search, $options: 'i' } },
+          { studentId: { $regex: search, $options: 'i' } },
+          { email: { $regex: search, $options: 'i' } },
+          { skillsOffered: { $regex: search, $options: 'i' } },
+          { skillsLookingFor: { $regex: search, $options: 'i' } }
+        ]
+      });
     }
 
     if (skillFilter) {
-      // skillFilter should match any element in the skills arrays
-      orClauses.push(
-        { skillsOffered: { $regex: skillFilter, $options: 'i' } },
-        { skillsLookingFor: { $regex: skillFilter, $options: 'i' } }
-      );
+      andClauses.push({
+        $or: [
+          { skillsOffered: { $regex: skillFilter, $options: 'i' } },
+          { skillsLookingFor: { $regex: skillFilter, $options: 'i' } }
+        ]
+      });
     }
 
-    if (orClauses.length > 0) {
-      query.$or = orClauses;
+    if (andClauses.length > 0) {
+      query.$and = andClauses;
     }
 
-    const users = await User.find(query)
-      .select('-password')
-      .sort({ reputation: -1, averageRating: -1 })
-      .skip(skip)
-      .limit(limit);
-
-    const total = await User.countDocuments(query);
+    // Run queries concurrently for better performance
+    const [users, total] = await Promise.all([
+      User.find(query)
+        .select('-password')
+        .sort({ reputation: -1, averageRating: -1 })
+        .skip(skip)
+        .limit(limit),
+      User.countDocuments(query)
+    ]);
 
     res.json({
       users,

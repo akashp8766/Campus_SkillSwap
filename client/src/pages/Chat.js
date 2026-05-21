@@ -27,7 +27,8 @@ import {
   Chip,
   Grid,
   Divider,
-  Popover
+  Popover,
+  useTheme
 } from '@mui/material';
 import {
   Send,
@@ -57,7 +58,10 @@ import MenuItem from '@mui/material/MenuItem';
 const Chat = () => {
   const { friendId } = useParams();
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
   const { user } = useAuth();
+  const userId = user?.id || user?._id;
   const { socket, connected, sendMessage, sendTypingIndicator } = useSocket();
   
   const [friends, setFriends] = useState([]);
@@ -100,7 +104,6 @@ const Chat = () => {
       const friend = friends.find(f => f._id === friendId);
       if (friend) {
         setSelectedFriend(friend);
-        loadChatMessages(friendId);
       }
     }
   }, [friendId, friends]);
@@ -353,7 +356,7 @@ const Chat = () => {
 
     // Add message to local state immediately
     const tempMessage = {
-      sender: user.id,
+      sender: userId,
       content: messageText,
       timestamp: new Date().toISOString(),
       isRead: false
@@ -750,7 +753,8 @@ const Chat = () => {
               {/* Chat Header */}
               <Box
                 p={2}
-                borderBottom="1px solid #e0e0e0"
+            borderBottom={1}
+            borderColor="divider"
                 display="flex"
                 alignItems="center"
                 justifyContent="space-between"
@@ -858,7 +862,7 @@ const Chat = () => {
                         backgroundColor:
                           message.sender === user.id
                             ? 'primary.main'
-                            : 'grey.100',
+                        : (isDark ? 'grey.800' : 'grey.100'),
                         color:
                           message.sender === user.id
                             ? 'white'
@@ -885,7 +889,7 @@ const Chat = () => {
                 {/* Typing Indicator */}
                 {isTyping && typingUser && (
                   <Box display="flex" justifyContent="flex-start" mb={2}>
-                    <Paper sx={{ p: 2, backgroundColor: 'grey.100' }}>
+                <Paper sx={{ p: 2, backgroundColor: isDark ? 'grey.800' : 'grey.100' }}>
                       <Typography variant="body2" color="text.secondary">
                         {typingUser} is typing...
                       </Typography>
@@ -899,7 +903,8 @@ const Chat = () => {
               {/* Message Input */}
               <Box
                 p={{ xs: 1.5, md: 2 }}
-                borderTop="1px solid #e0e0e0"
+            borderTop={1}
+            borderColor="divider"
                 display="flex"
                 alignItems="center"
                 gap={1}
@@ -974,7 +979,7 @@ const Chat = () => {
               height="100%"
               p={{ xs: 2, md: 4 }}
             >
-              <ChatIcon sx={{ fontSize: { xs: 60, md: 80 }, color: 'grey.400', mb: 2 }} />
+          <ChatIcon sx={{ fontSize: { xs: 60, md: 80 }, color: 'text.secondary', mb: 2 }} />
               <Typography variant="h5" color="text.secondary" gutterBottom sx={{ fontSize: { xs: '1.2rem', md: '1.5rem' } }}>
                 Select a friend to start chatting
               </Typography>
@@ -1002,7 +1007,7 @@ const Chat = () => {
         sx={{ display: { md: 'none' } }}
       >
         <Box sx={{ width: 280 }}>
-          <Box p={2} display="flex" justifyContent="space-between" alignItems="center" borderBottom="1px solid #e0e0e0">
+      <Box p={2} display="flex" justifyContent="space-between" alignItems="center" borderBottom={1} borderColor="divider">
             <Typography variant="h6" fontWeight={600}>Friends</Typography>
             <IconButton onClick={handleToggleMobileDrawer}>
               <Close />
@@ -1145,7 +1150,7 @@ const Chat = () => {
                 </Typography>
                 <Grid container spacing={2}>
                   <Grid item xs={6}>
-                    <Paper sx={{ p: 2, textAlign: 'center', bgcolor: 'grey.50' }}>
+                <Paper sx={{ p: 2, textAlign: 'center', bgcolor: isDark ? 'grey.900' : 'grey.50' }}>
                       <Typography variant="h4" color="primary">
                         {userDetails.feedbackCount || 0}
                       </Typography>
@@ -1155,7 +1160,7 @@ const Chat = () => {
                     </Paper>
                   </Grid>
                   <Grid item xs={6}>
-                    <Paper sx={{ p: 2, textAlign: 'center', bgcolor: 'grey.50' }}>
+                <Paper sx={{ p: 2, textAlign: 'center', bgcolor: isDark ? 'grey.900' : 'grey.50' }}>
                       <Typography variant="h4" color="warning.main">
                         {userDetails.averageRating ? userDetails.averageRating.toFixed(1) : 'N/A'}
                       </Typography>
@@ -1199,7 +1204,7 @@ const Chat = () => {
         <DialogContent dividers>
           <Box>
             {/* Session Info */}
-            <Paper sx={{ p: 2, mb: 3, bgcolor: 'grey.50' }}>
+        <Paper sx={{ p: 2, mb: 3, bgcolor: isDark ? 'grey.900' : 'grey.50' }}>
               <Typography variant="body2" color="text.secondary" gutterBottom>
                 Session with: <strong>{selectedFriend?.name}</strong>
               </Typography>

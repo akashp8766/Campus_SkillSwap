@@ -18,9 +18,10 @@ export const SocketProvider = ({ children }) => {
   const [connected, setConnected] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState([]);
   const { user, token } = useAuth();
+  const userId = user?.id || user?._id;
 
   useEffect(() => {
-    if (user && token) {
+    if (userId && token) {
       // Initialize socket connection
       const newSocket = io(process.env.REACT_APP_SERVER_URL || 'http://localhost:5000', {
         auth: {
@@ -35,8 +36,8 @@ export const SocketProvider = ({ children }) => {
         setConnected(true);
         
         // Join user to their personal room
-        console.log('🏠 Joining room for user:', user.id);
-        newSocket.emit('join', user.id);
+        console.log('🏠 Joining room for user:', userId);
+        newSocket.emit('join', userId);
       });
 
       newSocket.on('disconnect', () => {
@@ -95,12 +96,12 @@ export const SocketProvider = ({ children }) => {
         setConnected(false);
       };
     }
-  }, [user, token]);
+  }, [userId, token]);
 
   const sendMessage = (receiverId, message, messageType = 'text') => {
     if (socket && connected) {
       const messageData = {
-        senderId: user.id,
+        senderId: userId,
         receiverId,
         message,
         messageType,
@@ -118,7 +119,7 @@ export const SocketProvider = ({ children }) => {
   const sendTypingIndicator = (receiverId, isTyping) => {
     if (socket && connected) {
       socket.emit('typing', {
-        senderId: user.id,
+        senderId: userId,
         receiverId,
         isTyping
       });

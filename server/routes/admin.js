@@ -15,34 +15,28 @@ router.use(adminAuth);
 // @access  Private (Admin only)
 router.get('/dashboard', async (req, res) => {
   try {
-    // Get user statistics
-    const totalUsers = await User.countDocuments();
-    const newUsersThisMonth = await User.countDocuments({
-      createdAt: { $gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) }
-    });
-
-    // Get feedback statistics
-    const totalFeedback = await Feedback.countDocuments();
-    const averageRating = await Feedback.aggregate([
-      { $group: { _id: null, avgRating: { $avg: '$rating' } } }
+    // Run all dashboard queries concurrently to vastly improve performance
+    const [
+      totalUsers,
+      newUsersThisMonth,
+      totalFeedback,
+      averageRating,
+      totalFriendRequests,
+      pendingFriendRequests,
+      totalChats,
+      totalMessages,
+      lowRatedUsers
+    ] = await Promise.all([
+      User.countDocuments(),
+      User.countDocuments({ createdAt: { $gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) } }),
+      Feedback.countDocuments(),
+      Feedback.aggregate([{ $group: { _id: null, avgRating: { $avg: '$rating' } } }]),
+      FriendRequest.countDocuments(),
+      FriendRequest.countDocuments({ status: 'pending' }),
+      Chat.countDocuments({ isActive: true }),
+      Chat.aggregate([{ $unwind: '$messages' }, { $count: 'totalMessages' }]),
+      User.find({ averageRating: { $lt: 2.0 }, totalRatings: { $gte: 3 } }).select('name email studentId averageRating totalRatings')
     ]);
-
-    // Get friend request statistics
-    const totalFriendRequests = await FriendRequest.countDocuments();
-    const pendingFriendRequests = await FriendRequest.countDocuments({ status: 'pending' });
-
-    // Get chat statistics
-    const totalChats = await Chat.countDocuments({ isActive: true });
-    const totalMessages = await Chat.aggregate([
-      { $unwind: '$messages' },
-      { $count: 'totalMessages' }
-    ]);
-
-    // Get low-rated users (average rating < 2.0)
-    const lowRatedUsers = await User.find({
-      averageRating: { $lt: 2.0 },
-      totalRatings: { $gte: 3 } // Only users with at least 3 ratings
-    }).select('name email studentId averageRating totalRatings');
 
     res.json({
       statistics: {

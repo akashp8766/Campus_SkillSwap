@@ -247,9 +247,12 @@ const Register = () => {
                         InputProps={{
                           ...params.InputProps,
                           startAdornment: (
-                            <InputAdornment position="start">
-                              <Build />
-                            </InputAdornment>
+                            <>
+                              <InputAdornment position="start">
+                                <Build />
+                              </InputAdornment>
+                              {params.InputProps.startAdornment}
+                            </>
                           ),
                         }}
                       />
@@ -290,9 +293,12 @@ const Register = () => {
                         InputProps={{
                           ...params.InputProps,
                           startAdornment: (
-                            <InputAdornment position="start">
-                              <Psychology />
-                            </InputAdornment>
+                            <>
+                              <InputAdornment position="start">
+                                <Psychology />
+                              </InputAdornment>
+                              {params.InputProps.startAdornment}
+                            </>
                           ),
                         }}
                       />

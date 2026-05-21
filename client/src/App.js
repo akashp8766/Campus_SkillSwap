@@ -1,16 +1,19 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import { Box } from '@mui/material';
 
 // Context
 import { useAuth } from './context/AuthContext';
-import { NotificationProvider } from './context/NotificationContext';
+import { ChatBotProvider } from './context/ChatBotContext';
 
 // Components
 import Navbar from './components/layout/Navbar';
+import { Toolbar } from '@mui/material';
+import GlobalThemeToggle from './components/layout/GlobalThemeToggle';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import AdminRoute from './components/auth/AdminRoute';
+import ChatBotCircle from './components/chatbot/ChatBotCircle';
+import ChatBotInterface from './components/chatbot/ChatBotInterface';
 
 // Pages
 import Login from './pages/auth/Login';
@@ -21,6 +24,7 @@ import UserProfile from './pages/UserProfile';
 import Chat from './pages/Chat';
 import Friends from './pages/Friends';
 import Feedback from './pages/Feedback';
+import Recommendations from './pages/Recommendations';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminFeedback from './pages/admin/AdminFeedback';
@@ -40,7 +44,7 @@ function App() {
         <div className="loading-spinner" style={{ 
           width: '40px', 
           height: '40px', 
-          border: '4px solid #f3f3f3',
+          border: '4px solid rgba(128, 128, 128, 0.2)',
           borderTop: '4px solid #1976d2',
           borderRadius: '50%'
         }}></div>
@@ -49,7 +53,7 @@ function App() {
   }
 
   return (
-    <NotificationProvider>
+    <ChatBotProvider>
       <div className="App">
         <Toaster 
           position="top-right"
@@ -77,6 +81,13 @@ function App() {
         />
         
         {user && <Navbar />}
+        {/* Spacer to offset fixed AppBar so pages render below the toolbar */}
+        {user && <Toolbar />}
+        <GlobalThemeToggle />
+        
+        {/* ChatBot Components */}
+        <ChatBotCircle />
+        <ChatBotInterface />
       
       <Routes>
         {/* Public Routes */}
@@ -132,6 +143,12 @@ function App() {
           </ProtectedRoute>
         } />
         
+        <Route path="/recommendations" element={
+          <ProtectedRoute>
+            <Recommendations />
+          </ProtectedRoute>
+        } />
+        
         {/* Admin Routes */}
         <Route path="/admin" element={
           <AdminRoute>
@@ -161,7 +178,7 @@ function App() {
         <Route path="*" element={<NotFound />} />
       </Routes>
     </div>
-    </NotificationProvider>
+    </ChatBotProvider>
   );
 }
 

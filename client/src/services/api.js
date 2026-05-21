@@ -115,4 +115,25 @@ export const sessionService = {
   requestSession: (data) => api.post('/session/request', data),
 };
 
+// Recommendation API calls
+export const recommendationService = {
+  // New: Combined endpoint that fetches all recommendations at once
+  getAllRecommendations: (userId) => api.get(`/recommend/all/${userId}`),
+  
+  // Cache management
+  clearUserCache: (userId) => api.delete(`/recommend/cache/${userId}`),
+  clearAllCache: () => api.delete(`/recommend/cache`),
+  
+  // Legacy: Individual endpoints
+  getUserMatches: (userId) => api.get(`/recommend/matches/${userId}`),
+  getSkillRecommendations: (userId) => api.get(`/recommend/skills/${userId}`),
+  getFriendRecommendations: (userId) => api.get(`/recommend/friends/${userId}`),
+  getPopularSkills: () => api.get('/recommend/popular-skills'),
+  getSimilarUsers: (userId) => api.get(`/recommend/similar-users/${userId}`),
+};
+
+export const chatbotService = {
+  sendMessage: (message) => api.post('/chatbot/message', { message }),
+};
+
 export default api;

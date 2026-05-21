@@ -3,6 +3,7 @@ const Session = require('../models/Session');
 const Chat = require('../models/Chat');
 const User = require('../models/User');
 const FriendRequest = require('../models/FriendRequest');
+const { verifyFriendship } = require('../utils/friendship');
 
 const router = express.Router();
 
@@ -15,12 +16,7 @@ router.post('/start', async (req, res) => {
     const userId = req.user._id;
 
     // Verify friendship
-    const friendship = await FriendRequest.findOne({
-      $or: [
-        { sender: userId, receiver: friendId, status: 'accepted' },
-        { sender: friendId, receiver: userId, status: 'accepted' }
-      ]
-    });
+    const friendship = await verifyFriendship(userId, friendId);
 
     if (!friendship) {
       return res.status(403).json({ message: 'Not friends with this user' });
