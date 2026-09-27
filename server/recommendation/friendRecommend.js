@@ -50,7 +50,7 @@ module.exports = function friendRecommend(currentUser, users) {
     })
     .filter(u => u.friendScore > 0)
     .sort((a, b) => b.friendScore - a.friendScore)
-    .slice(0, 10)
+    .slice(0, 100)
     .map(item => ({
       ...item.user,
       friendScore: Math.round(item.friendScore * 100) / 100,

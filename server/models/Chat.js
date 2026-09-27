@@ -82,6 +82,12 @@ chatSchema.methods.addMessage = function(senderId, content, messageType = 'text'
   };
   
   this.messages.push(message);
+  
+  // SCALABILITY FIX: Limit array size to 500 to prevent MongoDB 16MB document crash
+  if (this.messages.length > 500) {
+    this.messages = this.messages.slice(-500);
+  }
+  
   this.lastMessage = {
     content,
     timestamp: message.timestamp,

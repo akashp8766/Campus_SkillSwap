@@ -50,7 +50,7 @@ module.exports = function skillRecommend(currentUser, users) {
   // Sort by frequency and return top 10 skills
   return Object.entries(skillCount)
     .sort((a, b) => b[1] - a[1])
-    .slice(0, 10)
+    .slice(0, 100)
     .map(([skill, frequency]) => ({
       skill,
       recommendationScore: frequency,

@@ -16,19 +16,20 @@ router.get('/:friendId', async (req, res) => {
     // Verify friendship exists
     const friendship = await verifyFriendship(userId, friendId);
 
-    if (!friendship) {
-      return res.status(403).json({ message: 'Not friends with this user' });
-    }
-
-    // Find or create chat
+    // Find chat
     let chat = await Chat.findOne({
       participants: { $all: [userId, friendId] }
     })
     .populate('messages.sender', 'name email')
     .populate('participants', 'name email');
 
+    // If chat doesn't exist, they MUST be friends to start a new one
     if (!chat) {
-      // Create new chat if it doesn't exist
+      if (!friendship) {
+        return res.status(403).json({ message: 'Cannot start a new chat with non-friends' });
+      }
+
+      // Create new chat
       chat = new Chat({
         participants: [userId, friendId]
       });
@@ -42,7 +43,7 @@ router.get('/:friendId', async (req, res) => {
     // Mark messages as read for current user
     await chat.markAsRead(userId);
 
-    res.json({ chat });
+    res.json({ chat, isFriend: !!friendship });
 
   } catch (error) {
     console.error('Get chat error:', error);

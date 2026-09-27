@@ -57,6 +57,11 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/campus-sk
 // Make io available to routes
 app.set('io', io);
 
+// Health Check Endpoint for Cloud Deployments
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date() });
+});
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', auth, userRoutes);
@@ -70,6 +75,23 @@ app.use('/api/chatbot', chatbotRoutes);
 
 // Socket.io connection handling
 const connectedUsers = new Map(); // Map userId to socketId
+
+// Socket.io Authentication Middleware
+io.use((socket, next) => {
+  const token = socket.handshake.auth.token;
+  if (!token) {
+    return next(new Error('Authentication error: No token provided'));
+  }
+  
+  try {
+    const jwt = require('jsonwebtoken');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    socket.user = decoded.user || decoded; // Support both {user: {id: ...}} and {id: ...} payloads
+    next();
+  } catch (err) {
+    return next(new Error('Authentication error: Invalid token'));
+  }
+});
 
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);

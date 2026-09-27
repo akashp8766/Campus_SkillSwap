@@ -129,7 +129,7 @@ module.exports = async function popularSkills() {
 
       trending: allSkills
         .sort((a, b) => b.trending - a.trending)
-        .slice(0, 10)
+        .slice(0, 100)
         .map(s => ({
           skill: s.skill,
           totalActivity: s.trending,

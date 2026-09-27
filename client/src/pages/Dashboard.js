@@ -31,6 +31,7 @@ import {
   Paper,
   Divider,
   useTheme,
+  Pagination,
 } from "@mui/material";
 import {
   Search,
@@ -61,6 +62,8 @@ const Dashboard = () => {
   const [conversations, setConversations] = useState([]);
   const [popularSkills, setPopularSkills] = useState([]);
   const [tabValue, setTabValue] = useState(0);
+  const [page, setPage] = useState(1);
+  const recordsPerPage = 20;
   const [anchorEl, setAnchorEl] = useState(null);
   const [expandedSkills, setExpandedSkills] = useState([]);
   const [userDetailsOpen, setUserDetailsOpen] = useState(false);
@@ -71,7 +74,7 @@ const Dashboard = () => {
     try {
       const response = await userService.getUsers({
         search: searchTerm,
-        limit: 100,
+        limit: 500,
       });
       setUsers(response.data.users);
     } catch (error) {
@@ -92,7 +95,7 @@ const Dashboard = () => {
       setTimeout(() => {
         userService.getUsers({
           search: searchSkill,
-          limit: 100,
+          limit: 500,
         }).then(response => {
           setUsers(response.data.users);
           toast.success(`Found ${response.data.users?.length || 0} users with ${searchSkill}`);
@@ -138,7 +141,7 @@ const Dashboard = () => {
       } else {
         // Prevent unnecessary full dashboard refetches when search is cleared
         userService
-          .getUsers({ limit: 100 })
+          .getUsers({ limit: 500 })
           .then((res) => setUsers(res.data.users))
           .catch((err) => console.error("Error reloading users:", err));
       }
@@ -153,7 +156,7 @@ const Dashboard = () => {
 
       // Load users and stats in parallel for faster loading
       const [usersRes, friendsRes, skillsRes] = await Promise.all([
-        userService.getUsers({ limit: 100 }), // Load all 100 users
+        userService.getUsers({ limit: 500 }), // Load all 100 users
         friendService.getFriends(),
         userService.getPopularSkills(),
       ]);
@@ -178,9 +181,10 @@ const Dashboard = () => {
   };
 
   const handleSearch = async () => {
+    setPage(1); // Reset page on new search
     if (!searchTerm.trim()) {
       try {
-        const response = await userService.getUsers({ limit: 100 });
+        const response = await userService.getUsers({ limit: 500 });
         setUsers(response.data.users);
       } catch (error) {
         console.error("Error resetting search:", error);
@@ -222,7 +226,7 @@ const Dashboard = () => {
     try {
       const response = await userService.getUsers({
         search: skillName,
-        limit: 100,
+        limit: 500,
       });
       setUsers(response.data.users);
     } catch (error) {
@@ -401,7 +405,7 @@ const Dashboard = () => {
               All Users ({users.length})
             </Typography>
             <Grid container spacing={3}>
-              {users.map((userItem) => (
+              {users.slice((page - 1) * recordsPerPage, page * recordsPerPage).map((userItem) => (
                 <Grid item xs={12} sm={6} md={4} lg={3} key={userItem._id}>
                   <Card
                     sx={{
@@ -512,6 +516,17 @@ const Dashboard = () => {
                 </Grid>
               ))}
             </Grid>
+            {users.length > recordsPerPage && (
+              <Box display="flex" justifyContent="center" mt={4} mb={2}>
+                <Pagination
+                  count={Math.ceil(users.length / recordsPerPage)}
+                  page={page}
+                  onChange={(e, value) => setPage(value)}
+                  color="primary"
+                  size="large"
+                />
+              </Box>
+            )}
           </TabPanel>
 
           <TabPanel value={tabValue} index={1}>

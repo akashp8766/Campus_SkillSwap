@@ -24,6 +24,7 @@ import {
   DialogContent,
   DialogActions,
   Divider,
+  Pagination,
 } from '@mui/material';
 import {
   PersonAdd,
@@ -32,6 +33,10 @@ import {
   TrendingUp,
   People,
   Close,
+  LightbulbOutlined,
+  LocalFireDepartment,
+  EmojiEvents,
+  TrackChanges,
 } from '@mui/icons-material';
 import { recommendationService, friendService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -66,6 +71,10 @@ export default function Recommendations() {
   const [friends, setFriends] = useState([]);
   const [popular, setPopular] = useState(null);
   const [similar, setSimilar] = useState([]);
+  const [matchPage, setMatchPage] = useState(1);
+  const [friendPage, setFriendPage] = useState(1);
+  const [similarPage, setSimilarPage] = useState(1);
+  const matchesPerPage = 12;
 
   // Dialog state for viewing profiles
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
@@ -244,15 +253,15 @@ export default function Recommendations() {
           <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
             Best Skill Swap Matches ({matches.length})
           </Typography>
-          <Typography variant="caption" color="textSecondary">
-            💡 These users have skills you want, and want skills you offer - perfect for skill swapping!
+          <Typography variant="caption" color="textSecondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <LightbulbOutlined fontSize="small" color="primary" />These users have skills you want, and want skills you offer - perfect for skill swapping!
           </Typography>
         </Box>
         {matches.length === 0 ? (
           <Alert severity="info">No matches found yet. Complete your profile to get matches!</Alert>
         ) : (
           <Grid container spacing={3}>
-            {matches.map(match => (
+            {matches.slice((matchPage - 1) * matchesPerPage, matchPage * matchesPerPage).map(match => (
               <Grid item xs={12} sm={6} md={4} key={match._id}>
                 <Card 
                   sx={{ 
@@ -327,21 +336,31 @@ export default function Recommendations() {
                   <CardActions>
                     <Button 
                       fullWidth 
-                      variant="contained" 
+                      variant="outlined" 
                       size="small"
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleConnect(match._id);
+                        handleOpenProfile(match, 'match');
                       }}
-                      disabled={sendingRequest}
                     >
-                      Connect
+                      View Profile
                     </Button>
                   </CardActions>
                 </Card>
               </Grid>
             ))}
           </Grid>
+        )}
+        {matches.length > matchesPerPage && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+            <Pagination 
+              count={Math.ceil(matches.length / matchesPerPage)} 
+              page={matchPage} 
+              onChange={(e, value) => setMatchPage(value)} 
+              color="primary" 
+              size="large"
+            />
+          </Box>
         )}
       </TabPanel>
 
@@ -397,20 +416,20 @@ export default function Recommendations() {
           <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
             Suggested Friends ({friends.length})
           </Typography>
-          <Typography variant="caption" color="textSecondary">
-            💡 These users have similar interests and departments as you - great people to connect with!
+          <Typography variant="caption" color="textSecondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <LightbulbOutlined fontSize="small" color="primary" /> These users have similar interests and departments as you - great people to connect with!
           </Typography>
         </Box>
         {friends.length === 0 ? (
           <Alert severity="info">No friend suggestions yet. Expand your interests!</Alert>
         ) : (
           <Grid container spacing={3}>
-            {friends.map(friend => (
+            {friends.slice((friendPage - 1) * matchesPerPage, friendPage * matchesPerPage).map(friend => (
               <Grid item xs={12} sm={6} md={4} key={friend._id}>
                 <Card sx={{ height: '100%' }}>
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                      <Avatar sx={{ mr: 2, bgcolor: 'secondary.main' }}>
+                      <Avatar sx={{ mr: 2, bgcolor: 'primary.main' }}>
                         {friend.name?.charAt(0).toUpperCase()}
                       </Avatar>
                       <Box>
@@ -448,18 +467,31 @@ export default function Recommendations() {
                   <CardActions>
                     <Button 
                       fullWidth 
-                      variant="contained" 
+                      variant="outlined" 
                       size="small"
-                      onClick={() => handleAddFriend(friend._id)}
-                      disabled={sendingRequest}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenProfile(friend, 'friend');
+                      }}
                     >
-                      Add Friend
+                      View Profile
                     </Button>
                   </CardActions>
                 </Card>
               </Grid>
             ))}
           </Grid>
+        )}
+        {friends.length > matchesPerPage && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+            <Pagination 
+              count={Math.ceil(friends.length / matchesPerPage)} 
+              page={friendPage} 
+              onChange={(e, value) => setFriendPage(value)} 
+              color="primary" 
+              size="large"
+            />
+          </Box>
         )}
       </TabPanel>
 
@@ -472,7 +504,7 @@ export default function Recommendations() {
           <Alert severity="info">No similar users found yet.</Alert>
         ) : (
           <Grid container spacing={3}>
-            {similar.map(similarUser => (
+            {similar.slice((similarPage - 1) * matchesPerPage, similarPage * matchesPerPage).map(similarUser => (
               <Grid item xs={12} sm={6} md={4} key={similarUser._id}>
                 <Card 
                   sx={{ 
@@ -486,7 +518,7 @@ export default function Recommendations() {
                 >
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                      <Avatar sx={{ mr: 2, bgcolor: 'success.main' }}>
+                      <Avatar sx={{ mr: 2, bgcolor: 'primary.main' }}>
                         {similarUser.name?.charAt(0).toUpperCase()}
                       </Avatar>
                       <Box>
@@ -512,6 +544,17 @@ export default function Recommendations() {
               </Grid>
             ))}
           </Grid>
+        )}
+        {similar.length > matchesPerPage && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+            <Pagination 
+              count={Math.ceil(similar.length / matchesPerPage)} 
+              page={similarPage} 
+              onChange={(e, value) => setSimilarPage(value)} 
+              color="primary" 
+              size="large"
+            />
+          </Box>
         )}
       </TabPanel>
 
@@ -564,8 +607,8 @@ export default function Recommendations() {
           <Grid item xs={12}>
             <Card>
               <CardContent>
-                <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
-                  🔥 Trending Skills
+                <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <LocalFireDepartment color="error" /> Trending Skills
                 </Typography>
                 <List>
                   {popular?.trending?.map((skill, idx) => (
@@ -583,30 +626,6 @@ export default function Recommendations() {
         </Grid>
       </TabPanel>
 
-      <Box sx={{ mt: 4, p: 2, bgcolor: 'background.paper', borderRadius: 1 }}>
-        <Button
-          variant="contained"
-          fullWidth
-          onClick={async () => {
-            try {
-              setLoading(true);
-              // Clear cache before refreshing
-              await recommendationService.clearUserCache(userId);
-              // Then fetch fresh recommendations
-              await fetchAllRecommendations();
-            } catch (err) {
-              console.error('Error refreshing:', err);
-              await fetchAllRecommendations();
-            } finally {
-              setLoading(false);
-            }
-          }}
-          disabled={loading}
-          sx={{ mb: 2 }}
-        >
-          {loading ? '⏳ Loading...' : '🔄 Refresh Recommendations'}
-        </Button>
-      </Box>
 
       {/* Profile Dialog */}
       <Dialog 
@@ -686,8 +705,8 @@ export default function Recommendations() {
               {/* Interests */}
               {selectedProfile.interests?.length > 0 && (
                 <Box sx={{ mb: 2 }}>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
-                    🎯 Interests
+                  <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <TrackChanges color="primary" fontSize="small" /> Interests
                   </Typography>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                     {selectedProfile.interests?.map(interest => (
@@ -705,7 +724,9 @@ export default function Recommendations() {
                 </Box>
                 <Box>
                   <Typography variant="caption" color="textSecondary">Reputation</Typography>
-                  <Typography variant="h6">{selectedProfile.reputation || 0} 🏆</Typography>
+                  <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    {selectedProfile.reputation || 0} <EmojiEvents color="warning" fontSize="small" />
+                  </Typography>
                 </Box>
               </Box>
             </Box>
@@ -719,7 +740,7 @@ export default function Recommendations() {
           >
             Close
           </Button>
-          {selectedProfileType === 'similar' ? (
+          {selectedProfileType === 'similar' || selectedProfileType === 'friend' ? (
             <Button 
               variant="contained"
               onClick={() => selectedProfile && handleAddFriend(selectedProfile._id)}

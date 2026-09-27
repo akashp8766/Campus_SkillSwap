@@ -103,12 +103,12 @@ router.get("/all/:userId", async (req, res) => {
     console.log(`✨ Got popular skills (${Date.now() - startTime}ms total)`);
 
     const responseData = {
-      matches: matches.slice(0, 10),
-      skills: skills.slice(0, 10),
-      friends: friends.slice(0, 10),
+      matches: matches.slice(0, 60),
+      skills: skills.slice(0, 20),
+      friends: friends.slice(0, 60),
       similar: similar
         .sort((a, b) => b.similarityScore - a.similarityScore)
-        .slice(0, 10),
+        .slice(0, 60),
       popular: popular,
     };
 

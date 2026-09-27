@@ -7,7 +7,7 @@ const GlobalThemeToggle = () => {
   const { mode, toggleTheme } = useThemeContext();
 
   return (
-    <Tooltip title={`Switch to ${mode === 'dark' ? 'light' : 'dark'} mode`}>
+    <Tooltip title={`Switch to ${mode === 'dark' ? 'light' : 'dark'} mode`} placement="left" arrow>
       <Fab
         size="medium"
         color="primary"
@@ -15,8 +15,8 @@ const GlobalThemeToggle = () => {
         onClick={toggleTheme}
         sx={{
           position: 'fixed',
-          right: 92,
-          bottom: 16,
+          right: 22,
+          bottom: 88,
           zIndex: 1600,
           boxShadow: 4,
         }}

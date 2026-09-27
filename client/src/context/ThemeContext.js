@@ -34,18 +34,20 @@ export const ThemeContextProvider = ({ children }) => {
           mode,
           ...(mode === 'light'
             ? {
-                primary: { main: '#1976d2' },
-                secondary: { main: '#dc004e' },
-                background: { default: '#f5f5f5', paper: '#ffffff' },
+                primary: { main: '#4F46E5', light: '#818CF8', dark: '#3730A3' },
+                secondary: { main: '#10B981', light: '#34D399', dark: '#047857' },
+                background: { default: '#F8FAFC', paper: '#FFFFFF' },
+                text: { primary: '#0F172A', secondary: '#475569' },
               }
             : {
-                primary: { main: '#90caf9' },
-                secondary: { main: '#f48fb1' },
-                background: { default: '#121212', paper: '#1e1e1e' },
+                primary: { main: '#818CF8', light: '#A5B4FC', dark: '#4F46E5' },
+                secondary: { main: '#34D399', light: '#6EE7B7', dark: '#10B981' },
+                background: { default: '#0F172A', paper: '#1E293B' },
+                text: { primary: '#F8FAFC', secondary: '#94A3B8' },
               }),
         },
         typography: {
-          fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+          fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
           h1: { fontSize: '2.5rem', fontWeight: 600, lineHeight: 1.2 },
           h2: { fontSize: '2rem', fontWeight: 600, lineHeight: 1.3 },
           h3: { fontSize: '1.75rem', fontWeight: 500, lineHeight: 1.4 },

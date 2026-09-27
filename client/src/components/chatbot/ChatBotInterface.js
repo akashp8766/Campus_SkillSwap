@@ -45,7 +45,7 @@ const ChatBotInterface = () => {
   const theme = useTheme();
   const { messages, setMessages, addMessage, loading, setLoading, openChatBot, setOpenChatBot, showCircle, setShowCircle, resetChat } = useChatBot();
   const [userInput, setUserInput] = useState('');
-  const [isDarkMode, setIsDarkMode] = useState(theme.palette.mode === 'dark');
+  const isDarkMode = true;
   const messagesEndRef = useRef(null);
 
   // Auto-scroll to bottom
@@ -104,14 +104,14 @@ const ChatBotInterface = () => {
         position: 'fixed',
         bottom: 30,
         right: 30,
-        width: { xs: '90vw', sm: 400 },
-        height: { xs: '70vh', sm: 520 },
+        width: { xs: '90vw', sm: 450 },
+        height: { xs: '75vh', sm: 600 },
         display: 'flex',
         flexDirection: 'column',
         backgroundColor: isDarkMode ? '#1e1e1e' : '#ffffff',
         borderRadius: 2,
         boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
-        zIndex: theme.zIndex.drawer + 3,
+        zIndex: 2000,
         overflow: 'hidden',
       }}
     >
@@ -145,17 +145,6 @@ const ChatBotInterface = () => {
         </Stack>
 
         <Stack direction="row" spacing={0.5}>
-          {/* Dark/Light Mode Toggle */}
-          <Tooltip title={isDarkMode ? 'Light Mode' : 'Dark Mode'}>
-            <IconButton
-              size="small"
-              onClick={() => setIsDarkMode(!isDarkMode)}
-              sx={{ color: 'white' }}
-            >
-              {isDarkMode ? <LightModeIcon fontSize="small" /> : <DarkModeIcon fontSize="small" />}
-            </IconButton>
-          </Tooltip>
-
           {/* Show/Hide Circle Toggle */}
           <Tooltip title={showCircle ? 'Hide Circle' : 'Show Circle'}>
             <IconButton
@@ -224,7 +213,7 @@ const ChatBotInterface = () => {
                       ? '#3a3a3a'
                       : '#e3f2fd'
                     : theme.palette.primary.main,
-                color: msg.sender === 'bot' ? 'inherit' : 'white',
+                color: '#ffffff',
                 borderRadius: 2,
                 wordBreak: 'break-word',
               }}
@@ -293,8 +282,8 @@ const ChatBotInterface = () => {
             >
               <SmartToyIcon sx={{ fontSize: 18 }} />
             </Avatar>
-            <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
-              <CircularProgress size={20} />
+            <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center', color: '#ffffff' }}>
+              <CircularProgress size={20} sx={{ color: '#ffffff' }} />
               <Typography variant="caption">Bot is thinking...</Typography>
             </Box>
           </Box>

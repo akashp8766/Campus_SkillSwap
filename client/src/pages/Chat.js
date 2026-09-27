@@ -66,6 +66,7 @@ const Chat = () => {
   
   const [friends, setFriends] = useState([]);
   const [selectedFriend, setSelectedFriend] = useState(null);
+  const [isFriend, setIsFriend] = useState(true);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
@@ -171,12 +172,33 @@ const Chat = () => {
 
   const loadFriends = async () => {
     try {
-      const response = await friendService.getFriends();
-      setFriends(response.data.friends);
+      const [friendsRes, convosRes] = await Promise.all([
+        friendService.getFriends(),
+        chatService.getConversations()
+      ]);
+      
+      const activeFriends = friendsRes.data.friends;
+      const conversations = convosRes.data.conversations;
+      
+      const combined = [...activeFriends];
+      
+      conversations.forEach(conv => {
+        if (!combined.find(f => f._id === conv.friend.id)) {
+          combined.push({
+            _id: conv.friend.id,
+            name: conv.friend.name,
+            email: conv.friend.email,
+            studentId: conv.friend.studentId,
+            isArchived: true
+          });
+        }
+      });
+      
+      setFriends(combined);
       setLoading(false);
     } catch (error) {
-      console.error('Error loading friends:', error);
-      toast.error('Failed to load friends');
+      console.error('Error loading friends or conversations:', error);
+      toast.error('Failed to load chat list');
       setLoading(false);
     }
   };
@@ -185,6 +207,7 @@ const Chat = () => {
     try {
       const response = await chatService.getChat(friendId);
       const chatMessages = response.data.chat?.messages || [];
+      setIsFriend(response.data.isFriend !== false);
       
       // Normalize message format - convert sender object to sender ID
       const normalizedMessages = chatMessages.map(msg => ({
@@ -772,7 +795,12 @@ const Chat = () => {
                     {selectedFriend.name?.charAt(0).toUpperCase() || 'U'}
                   </Avatar>
                   <Box>
-                    <Typography variant="h6">{selectedFriend.name || 'Unknown User'}</Typography>
+                    <Typography variant="h6" display="flex" alignItems="center" gap={1}>
+                      {selectedFriend.name || 'Unknown User'}
+                      {!isFriend && (
+                        <Chip size="small" label="Archived" color="default" variant="outlined" />
+                      )}
+                    </Typography>
                     <Typography variant="body2" color="text.secondary">
                       {selectedFriend.studentId || ''}
                     </Typography>
@@ -919,11 +947,11 @@ const Chat = () => {
                 </IconButton>
                 <TextField
                   fullWidth
-                  placeholder="Type a message..."
+                  placeholder={!isFriend ? "You can no longer reply to this conversation." : "Type a message..."}
                   value={newMessage}
                   onChange={handleTyping}
                   onKeyPress={handleKeyPress}
-                  disabled={!connected}
+                  disabled={!connected || !isFriend}
                   size="small"
                   multiline
                   maxRows={4}
@@ -932,7 +960,7 @@ const Chat = () => {
                       <InputAdornment position="end">
                         <IconButton
                           onClick={handleSendMessage}
-                          disabled={!newMessage.trim() || !connected}
+                          disabled={!newMessage.trim() || !connected || !isFriend}
                           color="primary"
                           size="small"
                         >

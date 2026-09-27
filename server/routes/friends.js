@@ -290,15 +290,8 @@ router.delete('/:friendId', async (req, res) => {
     friendship.respondedAt = new Date();
     await friendship.save();
 
-    // Delete the chat between these users
-    try {
-      await Chat.deleteOne({
-        participants: { $all: [userId, friendObjectId] }
-      });
-    } catch (chatError) {
-      console.error('Error deleting chat:', chatError);
-      // Don't fail the request if chat deletion fails
-    }
+    // We intentionally DO NOT delete the Chat document here.
+    // This allows users to retain their chat history (Task 7 integration).
 
     // Emit notification to the friend
     const io = req.app.get('io');

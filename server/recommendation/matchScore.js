@@ -49,7 +49,7 @@ module.exports = function matchScore(currentUser, users) {
     })
     .filter(u => u.score > 0) // Only include users with positive score
     .sort((a, b) => b.score - a.score) // Sort by score descending
-    .slice(0, 10) // Return top 10 matches
+    .slice(0, 100) // Return top 100 matches
     .map(item => ({
       ...item.user.toObject ? item.user.toObject() : item.user,
       matchScore: Math.round(item.score * 100) / 100, // Round to 2 decimal places
