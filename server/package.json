@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "seed": "node seedData.js"
+    "seed": "node seedData.js",
+    "test": "jest --forceExit"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -21,7 +22,9 @@
     "socket.io": "^4.7.4"
   },
   "devDependencies": {
-    "nodemon": "^3.0.2"
+    "jest": "^30.5.2",
+    "nodemon": "^3.0.2",
+    "supertest": "^7.3.0"
   },
   "keywords": [
     "express",

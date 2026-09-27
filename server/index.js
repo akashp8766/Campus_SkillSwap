@@ -248,6 +248,8 @@ server.on('error', (error) => {
   process.exit(1);
 });
 
-startServer(BASE_PORT);
+if (process.env.NODE_ENV !== 'test') {
+  startServer(BASE_PORT);
+}
 
 module.exports = { app, io, connectedUsers };
