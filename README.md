@@ -1,8 +1,8 @@
-# Campus Skill Swap 🎓
+# Campus Skill Swap 
 
 A comprehensive campus skill swap platform built with the MERN stack. This application enables students to connect, share skills, and learn from each other in a structured, feedback-driven environment with real-time chat.
 
-## 🏗️ System Architecture
+## System Architecture
 
 The application is built using a modern, decoupled cloud architecture utilizing Docker and CI/CD pipelines.
 
@@ -29,18 +29,18 @@ graph TD
 - **Container Registry:** GitHub Container Registry (GHCR)
 - **CI/CD:** GitHub Actions (Automated build, test, and push)
 
-## 🌟 Features
+##  Features
 
-- **🔐 Authentication**: Campus email verification with JWT tokens and bcrypt password hashing
-- **👤 User Profiles**: Comprehensive profiles with skills offered, interests, and skills looking for
-- **👥 Friend System**: Symmetrical friend requests with accept/decline functionality
-- **💬 Real-time Chat**: One-to-one messaging between friends using Socket.io
-- **🔄 Skill Swaps**: Structured skill exchange proposals and sessions
-- **⭐ Feedback System**: Rating and review system for skill exchanges
-- **🛡️ Admin Panel**: Comprehensive user monitoring and management tools
-- **🤖 AI Chatbot**: Built-in Groq AI chatbot for learning assistance
+- ** Authentication**: Campus email verification with JWT tokens and bcrypt password hashing
+- ** User Profiles**: Comprehensive profiles with skills offered, interests, and skills looking for
+- ** Friend System**: Symmetrical friend requests with accept/decline functionality
+- ** Real-time Chat**: One-to-one messaging between friends using Socket.io
+- ** Skill Swaps**: Structured skill exchange proposals and sessions
+- ** Feedback System**: Rating and review system for skill exchanges
+- ** Admin Panel**: Comprehensive user monitoring and management tools
+- ** AI Chatbot**: Built-in Groq AI chatbot for learning assistance
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 ### Frontend
 - **React 18** + **Vite**
@@ -55,7 +55,7 @@ graph TD
 - **Socket.io** for WebSockets
 - **Docker** for containerization
 
-## 🚀 Local Development Setup
+##  Local Development Setup
 
 ### Prerequisites
 - Node.js (v18 or higher)
@@ -108,7 +108,7 @@ campus-skill-swap/
 └── README.md
 ```
 
-## 🚀 Production Deployment Details
+##  Production Deployment Details
 
 ### Frontend (Vercel)
 - **Framework:** Vite
